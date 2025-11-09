@@ -21,38 +21,20 @@ Esta solução utiliza **Docker**, **Azure DevOps CI/CD**, **Azure App Service**
 ## ✅ Pipeline no Azure DevOps
 
 ### **1️⃣ CI – Continuous Integration**
+
 O pipeline executa automaticamente:
 
 - Restore  
 - Build  
 - Test  
-- Publicação do artefato (drop) 
 - Docker Build  
 - Docker Push → ACR  
+- Publicação do artefato (drop) da sprint ✅  
 
 ---
 
 ### **2️⃣ CD – Continuous Deployment**
 
-- Release obtém a imagem publicada no **ACR**
-- App Service baixa a imagem
-- Reinicia o container
-- Aplica variáveis de ambiente
-- Valida via `/health`
-
-Fluxo totalmente automatizado.
-
----
-
-## ✅ Integrantes do Grupo
-
-- **Felipe Prometti** — RM555174 — 2TDSPM  
-- **Maria Eduarda Pires** — RM558976 — 2TDSPZ  
-- **Samuel Damasceno** — RM558876 — 2TDSPM  
-
----
-
-## ✅ Arquitetura e Estrutura do Código
-
-Projeto baseado em **Clean Architecture + DDD**, separando responsabilidades entre camadas.
-
+- A Release obtém a imagem no **ACR**
+- O App Service baixa a nova versão da imagem
+- Re

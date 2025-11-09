@@ -7,6 +7,7 @@ COPY src/Api/*.csproj src/Api/
 COPY src/Application/*.csproj src/Application/
 COPY src/Domain/*.csproj src/Domain/
 COPY src/Infrastructure/*.csproj src/Infrastructure/
+COPY AuroraTrace.Tests/*.csproj AuroraTrace.Tests/
 
 RUN dotnet restore "src/Api/Api.csproj"
 
