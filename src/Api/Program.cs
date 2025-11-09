@@ -1,4 +1,4 @@
-using Application.Services;
+﻿using Application.Services;
 using AutoMapper;
 using Domain.Repositories;
 using FirebaseAdmin;
@@ -19,6 +19,9 @@ using System.Reflection;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddDataProtection()
+    .PersistKeysToInMemory();
 
 builder.Services.AddAutoMapper(cfg => cfg.AddProfile<MappingProfile>());
 builder.Services.AddControllers();
@@ -60,7 +63,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateLifetime = true
         };
     });
-
 
 var mongoConnectionString = builder.Configuration.GetConnectionString("MongoDB");
 builder.Services.AddSingleton<IMongoClient>(_ => new MongoClient(mongoConnectionString));
