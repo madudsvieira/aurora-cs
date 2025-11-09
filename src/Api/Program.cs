@@ -20,44 +20,45 @@ using System.IO;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 🔹 Seu DataProtection
 builder.Services.AddDataProtection()
     .PersistKeysToFileSystem(new DirectoryInfo("/home/site/wwwroot/DataProtection-Keys"));
 
-// 🔹 Configurações JWT do upstream
 var jwtSection = builder.Configuration.GetSection("JwtSettings");
 var jwtSettings = jwtSection.Get<JwtSettings>() ?? new JwtSettings();
 builder.Services.AddSingleton(jwtSettings);
 builder.Services.AddSingleton<JwtService>();
 
-// 🔹 Autenticação principal (JWT local)
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer("LocalJWT", options =>
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = "LocalJWT";
+    options.DefaultChallengeScheme = "LocalJWT";
+    options.DefaultScheme = "LocalJWT";
+})
+.AddJwtBearer("LocalJWT", options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
     {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = jwtSettings.Issuer,
-            ValidAudience = jwtSettings.Audience,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key))
-        };
-    })
-    // 🔹 Seu esquema Firebase adicional
-    .AddJwtBearer("Firebase", options =>
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = jwtSettings.Issuer,
+        ValidAudience = jwtSettings.Audience,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key))
+    };
+})
+.AddJwtBearer("Firebase", options =>
+{
+    options.Authority = "https://securetoken.google.com/auroraapp-85303";
+    options.TokenValidationParameters = new TokenValidationParameters
     {
-        options.Authority = "https://securetoken.google.com/auroraapp-85303";
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidIssuer = "https://securetoken.google.com/auroraapp-85303",
-            ValidateAudience = true,
-            ValidAudience = "auroraapp-85303",
-            ValidateLifetime = true
-        };
-    });
+        ValidateIssuer = true,
+        ValidIssuer = "https://securetoken.google.com/auroraapp-85303",
+        ValidateAudience = true,
+        ValidAudience = "auroraapp-85303",
+        ValidateLifetime = true
+    };
+});
 
 builder.Services.AddAutoMapper(cfg => cfg.AddProfile<MappingProfile>());
 builder.Services.AddControllers();
@@ -110,6 +111,7 @@ var app = builder.Build();
 app.MapHealthChecks("/health");
 
 var apiVersionDescriptionProvider = app.Services.GetRequiredService<IApiVersionDescriptionProvider>();
+
 app.UseSwagger();
 app.UseSwaggerUI(options =>
 {
@@ -119,7 +121,6 @@ app.UseSwaggerUI(options =>
     }
 });
 
-app.UseHttpsRedirection();
 app.UseCors(MyAllowSpecificOrigins);
 app.UseAuthentication();
 app.UseAuthorization();
