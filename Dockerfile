@@ -17,11 +17,14 @@ RUN dotnet publish "src/Api/Api.csproj" -c Release -o /app/publish
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS final
 WORKDIR /app
 
+RUN mkdir -p /home/site/wwwroot/DataProtection-Keys
+
 RUN addgroup --system appgroup && adduser --system appuser --ingroup appgroup
 
 COPY --from=build /app/publish .
 
-RUN chown -R appuser:appgroup /app
+RUN chown -R appuser:appgroup /app /home/site
+
 USER appuser
 
 EXPOSE 8080
