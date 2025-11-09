@@ -5,5 +5,6 @@ public enum StatusMoto
     DISPONIVEL,
     OCUPADA,
     SUMIDA,
-    MANUTENCAO
+    MANUTENCAO,
+    Ativa
 }

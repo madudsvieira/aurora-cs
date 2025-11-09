@@ -25,45 +25,43 @@ public sealed class ConfigureSwaggerOptions : IConfigureOptions<SwaggerGenOption
             {
                 Title = $"AuroraTrace API {desc.ApiVersion}",
                 Version = desc.ApiVersion.ToString(),
-                Description = "API para gerenciamento AuroraTrace",
+                Description = "API para gerenciamento do sistema AuroraTrace",
                 Contact = new OpenApiContact
                 {
-                    Name = _configuration["Swagger:Contact:Name"],
-                    Email = _configuration["Swagger:Contact:Email"]
+                    Name = _configuration["Swagger:Contact:Name"] ?? "Equipe AuroraTrace",
+                    Email = _configuration["Swagger:Contact:Email"] ?? "auroratrace@fiap.com.br"
                 }
             });
         }
 
         var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
         var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-        if (File.Exists(xmlPath)) options.IncludeXmlComments(xmlPath);
+        if (File.Exists(xmlPath))
+            options.IncludeXmlComments(xmlPath);
 
         options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
         {
-            Description = "JWT Authorization header usando o esquema Bearer. Exemplo: 'Bearer {seu_token}'",
             Name = "Authorization",
+            Type = SecuritySchemeType.Http,
+            Scheme = "bearer",
+            BearerFormat = "JWT",
             In = ParameterLocation.Header,
-            Type = SecuritySchemeType.ApiKey,
-            Scheme = "Bearer"
+            Description = "Insira o token JWT no formato: **Bearer {seu_token}**"
         });
 
         options.AddSecurityRequirement(new OpenApiSecurityRequirement
-{
-    {
-        new OpenApiSecurityScheme
         {
-            Reference = new OpenApiReference
             {
-                Type = ReferenceType.SecurityScheme,
-                Id = "Bearer"
-            },
-            Scheme = "oauth2",
-            Name = "Bearer",
-            In = ParameterLocation.Header
-        },
-        new List<string>()
-    }
-});
-
+                new OpenApiSecurityScheme
+                {
+                    Reference = new OpenApiReference
+                    {
+                        Type = ReferenceType.SecurityScheme,
+                        Id = "Bearer"
+                    }
+                },
+                Array.Empty<string>()
+            }
+        });
     }
 }

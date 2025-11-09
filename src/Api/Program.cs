@@ -1,15 +1,13 @@
 ﻿using Application.Services;
 using AutoMapper;
 using Domain.Repositories;
-using FirebaseAdmin;
-using Google.Apis.Auth.OAuth2;
 using Infrastructure.Context;
 using Infrastructure.Mongo;
 using Infrastructure.Repositories;
+using Infrastructure.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -22,8 +20,30 @@ using System.IO;
 
 var builder = WebApplication.CreateBuilder(args);
 
+<<<<<<< HEAD
 builder.Services.AddDataProtection()
     .PersistKeysToFileSystem(new DirectoryInfo("/home/site/wwwroot/DataProtection-Keys"));
+=======
+var jwtSection = builder.Configuration.GetSection("JwtSettings");
+var jwtSettings = jwtSection.Get<JwtSettings>() ?? new JwtSettings();
+builder.Services.AddSingleton(jwtSettings);
+builder.Services.AddSingleton<JwtService>();
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwtSettings.Issuer,
+            ValidAudience = jwtSettings.Audience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key))
+        };
+    });
+>>>>>>> upstream/master
 
 builder.Services.AddAutoMapper(cfg => cfg.AddProfile<MappingProfile>());
 builder.Services.AddControllers();
@@ -52,6 +72,7 @@ builder.Services.AddVersionedApiExplorer(options =>
 builder.Services.AddSwaggerGen(o => { o.EnableAnnotations(); });
 builder.Services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
 
+<<<<<<< HEAD
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -66,6 +87,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+=======
+>>>>>>> upstream/master
 var mongoConnectionString = builder.Configuration.GetConnectionString("MongoDB");
 builder.Services.AddSingleton<IMongoClient>(_ => new MongoClient(mongoConnectionString));
 builder.Services.AddSingleton<AuroraMongoContext>();
@@ -105,3 +128,5 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 app.Run();
+
+public partial class Program { }

@@ -25,7 +25,7 @@ namespace Infrastructure.Mongo
             {
                 { "Placa", "ABC1D23" },
                 { "Modelo", "CG 160" },
-                { "Status", "Ativa" },
+                { "Status", "DISPONIVEL" },
                 { "UltimoSetor", BsonNull.Value },
                 { "UltimoSlot", BsonNull.Value }
             });

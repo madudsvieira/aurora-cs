@@ -1,6 +1,8 @@
-﻿using MongoDB.Driver;
-using Domain.Entity;
+﻿using Domain.Entity;
+using Infrastructure.Mongo.Serializers;
 using Microsoft.Extensions.Configuration;
+using MongoDB.Bson.Serialization;
+using MongoDB.Driver;
 
 namespace Infrastructure.Context
 {
@@ -8,10 +10,20 @@ namespace Infrastructure.Context
     {
         private readonly IMongoDatabase _database;
 
+        static AuroraMongoContext()
+        {
+            BsonSerializer.RegisterSerializer(typeof(Domain.ValueObject.Placa), new PlacaSerializer());
+        }
+
         public AuroraMongoContext(IConfiguration configuration)
         {
             var client = new MongoClient(configuration.GetConnectionString("MongoDb"));
             _database = client.GetDatabase("AuroraTraceDb");
+        }
+
+        public AuroraMongoContext(MongoClient client, string databaseName)
+        {
+            _database = client.GetDatabase(databaseName);
         }
 
         public IMongoCollection<Moto> Motos => _database.GetCollection<Moto>("Motos");

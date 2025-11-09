@@ -12,7 +12,7 @@ A solução é composta por três repositórios principais:
 | :--- | :--- |:--------------------------------------------------------------------------------------|
 | **Mobile App** | React Native/Expo | [Mobile](https://github.com/Challenge2025-Aurora/aurora-mobile) |
 | **API Java** | Spring Boot | [Java](https://github.com/Challenge2025-Aurora/challenge2025-java) |
-| **API C#** | .NET Core | [C#](https://github.com/Challenge2025-Aurora/aurora-cs) |
+| **API C#** | .NET 9 / MongoDB | [C#](https://github.com/Challenge2025-Aurora/aurora-cs) |
 
 ---
 
@@ -30,10 +30,11 @@ O projeto segue os princípios de **Clean Architecture** e **Domain Driven Desig
 
 ```plaintext
 📦 src
- ┣ 📂 Api             -> Controllers e configuração de rotas (incluindo endpoint de health check)
+ ┣ 📂 Api             -> Controllers e rotas, incluindo JWT e /health
  ┣ 📂 Application     -> DTOs, serviços e lógica de aplicação
  ┣ 📂 Domain          -> Entidades, enums e value objects
  ┗ 📂 Infrastructure  -> Repositórios e conexão com o banco MongoDB
+ 📦 AuroraTrace.Tests
 ```
 
 ---
@@ -44,6 +45,8 @@ O projeto segue os princípios de **Clean Architecture** e **Domain Driven Desig
 - **Enums e Value Objects**: Mostram conceitos imutáveis e padronizados (`StatusMoto` e `Placa`)
 - **MongoDB**: A aplicação agora usa **MongoDB** como banco de dados principal, substituindo o Oracle. Foram adicionados **dados iniciais automáticos (seed)** que populam o banco ao iniciar a API para testes locais
 - **Health Endpoint**: Implementado o endpoint `/api/health` para verificar a saúde da aplicação e a conexão com o banco.
+- **Autenticação JWT**: Todas as rotas protegidas exigem um token JWT válido, gerado e validado pela própria API.
+- **Swagger**: O Swagger UI permite autenticação JWT diretamente, facilitando o teste de endpoints protegidos.
 
 ---
 
@@ -55,7 +58,10 @@ O projeto segue os princípios de **Clean Architecture** e **Domain Driven Desig
 | **Banco de Dados** | MongoDB |
 | **Mapeamento / ORM** | MongoDB.Driver |
 | **Arquitetura** | Clean Architecture + DDD |
+| **Autenticação** | JWT |
+| **Testes** | xUnit |
 | **Documentação** | Swagger |
+| **Monitoramento** | Health |
 
 ---
 
@@ -88,11 +94,17 @@ Isso iniciará um container com o MongoDB disponível em `mongodb://localhost:27
 
 ---
 
-### 3. Configurar a conexão no `appsettings.json`
+### 3. Configurar o `appsettings.json`
 
 ```json
 "ConnectionStrings": {
-  "MongoDb": "mongodb://localhost:27017"
+  "MongoDB": "mongodb://localhost:27017"
+},
+"JwtSettings": {
+  "Key": "chave_local_super_secreta_para_testes_1234567890123456",
+  "Issuer": "AuroraTraceAPI",
+  "Audience": "AuroraTraceClients",
+  "ExpirationMinutes": 60
 }
 ```
 
@@ -115,6 +127,28 @@ A API iniciará e criará automaticamente os dados iniciais no banco MongoDB.
 http://localhost:5002/swagger
 ```
 
+Dentro do Swagger, clique em Authorize e insira o token JWT no formato:
+
+`Bearer {seu_token}`
+
+Você pode gerar esse token dentro do próprio swagger ou acessando `POST /api/auth/login
+` e enviando um corpo JSON assim:
+
+```bash
+{
+  "userId": "user-teste"
+}
+```
+
+O valor de userId pode ser qualquer string — ele serve apenas como identificador simbólico para gerar o token.
+
+Copie o token e, no Swagger, clique em Authorize (ícone de cadeado no topo).
+Cole no formato:
+
+```bash
+Bearer [token]
+```
+
 ---
 
 ### 6. Verificar o Health Check
@@ -124,6 +158,29 @@ http://localhost:5002/api/health
 ```
 
 Se tudo estiver configurado corretamente, o endpoint retornará o status de funcionamento da API e da conexão com o banco.
+
+---
+
+## Testes Automatizados
+
+A área de testes usa:
+
+- xUnit para testes unitários e de integração
+- Mongo2Go para um banco MongoDB temporário de teste
+- WebApplicationFactory para levantar a API em ambiente isolado
+
+### Executar todos os testes
+
+```bash
+dotnet test
+```
+
+Os testes verificam:
+
+- Geração e validação de tokens JWT
+- Endpoints principais (/api/moto, /api/patio)
+- Seed e conexão do MongoDB
+- Comportamento esperado da API em cenários reais
 
 ---
 
